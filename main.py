@@ -44,7 +44,7 @@ def main():
                 shot.collides_with(asteroid)
                 if shot.collides_with(asteroid):
                     log_event("asteroid_shot")
-                    asteroid.kill()
+                    asteroid.split()
                     shot.kill()
             
         screen.fill("black")
