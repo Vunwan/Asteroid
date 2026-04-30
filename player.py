@@ -4,12 +4,17 @@ from circleshape import CircleShape
 from shot import Shot
 
 class Player(CircleShape):
+
     def __init__(self, x, y):
+
         super().__init__(x, y, PLAYER_RADIUS)
         self.rotation = 0
         self.shot_cooldown_timer = 0
+        self.invicibility_cooldown_timer = 0
+        self.ship_lives = 3
 
     def triangle(self):
+
         forward = pygame.Vector2(0, 1).rotate(self.rotation)
         right = pygame.Vector2(0, 1).rotate(self.rotation + 90) * self.radius / 1.5
         a = self.position + forward * self.radius
@@ -18,15 +23,19 @@ class Player(CircleShape):
         return [a, b, c]
 
     def draw(self, screen):
+
         points = self.triangle()
         pygame.draw.polygon(screen, "white", points, LINE_WIDTH)
 
     def rotate(self, dt):
+
         self.rotation += PLAYER_TURN_SPEED * dt
 
     def update(self, dt):
+
         keys = pygame.key.get_pressed()
         self.shot_cooldown_timer -= dt
+        self.invicibility_cooldown_timer -= dt
 
         if keys[pygame.K_SPACE]:
             self.shoot()
@@ -40,15 +49,29 @@ class Player(CircleShape):
             self.move(dt)
 
     def move(self, dt):
+
         unit_vector = pygame.Vector2(0, 1)
         rotated_vector = unit_vector.rotate(self.rotation)
         rotated_with_speed_vector = rotated_vector * PLAYER_SPEED * dt
         self.position += rotated_with_speed_vector
 
     def shoot(self):
+
         if self.shot_cooldown_timer > 0:
             return
         self.shot_cooldown_timer = PLAYER_SHOOT_COOLDOWN_SECONDS
         shot = Shot(self.position.x, self.position.y)
         shot_velocity = pygame.Vector2(0, 1).rotate(self.rotation) * PLAYER_SHOOT_SPEED
         shot.velocity = shot_velocity
+
+    def damage(self):
+
+        if self.invicibility_cooldown_timer <= 0:
+            self.minus_lives()
+            self.invicibility_cooldown_timer = PLAYER_INVINCIBILITY_COOLDOWN_SECONDS
+        return
+
+    def minus_lives(self):
+
+        if self.ship_lives > 0:
+            self.ship_lives -= 1
